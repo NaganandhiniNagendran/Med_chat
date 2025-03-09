@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url(bg1.jpg);
+            background-size: cover;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: left;
+            width: 400px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            margin-bottom: 30px;
+            font-size: 40px;
+            font-weight: bold;
+            color: #1DA1F2;
+        }
+        .form-group {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            font-size: 14px;
+            color: #657786;
+        }
+        .form-group input {
+            width: 90%;
+            padding: 15px;
+            border: 1px solid #ccd6dd;
+            border-radius: 30px;
+            font-size: 18px;
+            color: #14171a;
+            margin-top: 5px;
+        }
+        .form-group button {
+            width: 100%;
+            padding: 12px;
+            background-color: #1DA1F2;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #1991db;
+        }
+        .form-group a {
+            font-size: 14px;
+            color: #1DA1F2;
+            text-align: center;
+            display: block;
+            margin-top: 10px;
+            text-decoration: none;
+        }
+        .form-group a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        const firebaseConfig = {
+
+    apiKey: "AIzaSyCmGZWSE6YX4PaRbt7-Q0EW4LpbFoSgJB0",
+
+    authDomain: "login-afdf6.firebaseapp.com",
+
+    projectId: "login-afdf6",
+
+    storageBucket: "login-afdf6.firebasestorage.app",
+
+    messagingSenderId: "318806251450",
+
+    appId: "1:318806251450:web:d13b5f1d6a504e89b5ef83",
+
+    measurementId: "G-S6T8YBW18F"
+
+  };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        function signUpWithFirebase(event) {
+            event.preventDefault();
+            const username = document.getElementById("signup-username").value;
+            const name = document.getElementById("signup-name").value;
+            const email = document.getElementById("signup-email").value;
+            const password = document.getElementById("signup-password").value;
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Add user data to Firestore
+                    db.collection("users").doc(userCredential.user.uid).set({
+                        username: username,
+                        name: name,
+                        email: email
+                    }).then(() => {
+                        alert("Signup successful! Please sign in.");
+                        window.location.href = "index.html";
+                    }).catch((error) => {
+                        alert("Error adding user data: " + error.message);
+                        userCredential.user.delete(); // Rollback user creation if Firestore fails
+                    });
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Sign Up</h2>
+        <form onsubmit="signUpWithFirebase(event)">
+            <div class="form-group">
+                <label for="signup-username">Username</label>
+                <input type="text" id="signup-username" name="username" required placeholder="Enter your username">
+            </div>
+            <div class="form-group">
+                <label for="signup-name">Name</label>
+                <input type="text" id="signup-name" name="name" required placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+                <label for="signup-email">Email Address</label>
+                <input type="email" id="signup-email" name="email" required placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="signup-password">Password</label>
+                <input type="password" id="signup-password" name="password" required placeholder="Enter your password">
+            </div>
+            <div class="form-group">
+                <button type="submit">Sign Up</button>
+            </div>
+            <div class="form-group">
+                
+                <script>
+                    window.location.href = "index.html";
+                </script>
+                
+
+        </form>
+    </div>
+</body>
+</html>
