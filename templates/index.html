@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url(bg1.jpg);
+            background-size: cover;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: left;
+            width: 400px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            margin-bottom: 30px;
+            font-size: 40px;
+            font-weight: bold;
+            color: #1DA1F2;
+        }
+        .form-group {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            font-size: 14px;
+            color: #657786;
+        }
+        .form-group input {
+            width: 90%;
+            padding: 15px;
+            border: 1px solid #ccd6dd;
+            border-radius: 30px;
+            font-size: 18px;
+            color: #14171a;
+            margin-top: 5px;
+        }
+        .form-group button {
+            width: 100%;
+            padding: 12px;
+            background-color: #1DA1F2;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #1991db;
+        }
+        .form-group a {
+            font-size: 14px;
+            color: #1DA1F2;
+            text-align: center;
+            display: block;
+            margin-top: 10px;
+            text-decoration: none;
+        }
+        .form-group a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="signin-container" class="container">
+        <h2><CENTER>Login</CENTER></h2>
+        <form onsubmit="validateSignIn(event)">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
+            </div>
+            <div class="form-group">
+                <button type="submit">Sign In</button>
+            </div>
+            <div class="form-group">
+                <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
+            </div>
+            <div class="form-group">
+                <a href="{{ url_for('signup') }}">Don't have an account? Sign Up</a>
+            </div>
+            <div class="form-group">
+                <div id="g_id_onload"
+                     data-client_id="YOUR_GOOGLE_CLIENT_ID"
+                     data-callback="handleCredentialResponse"
+                     data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin" data-type="standard"></div>
+            </div>
+        </form>
+    </div>
+
+    <div id="forgot-password-container" class="container" style="display: none;">
+        <h2>Forgot Password</h2>
+        <form onsubmit="forgotPasswordFirebase(event)">
+            <div class="form-group">
+                <label for="forgot-email">Enter your email address</label>
+                <input type="email" id="forgot-email" name="email" required placeholder="Email address">
+            </div>
+            <div class="form-group">
+                <button type="submit">Send Reset Link</button>
+            </div>
+            <div class="form-group">
+                <a href="#" onclick="showSignInFromForgot()">Back to Sign In</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCmGZWSE6YX4PaRbt7-Q0EW4LpbFoSgJB0",
+            authDomain: "login-afdf6.firebaseapp.com",
+            projectId: "login-afdf6",
+            storageBucket: "login-afdf6.appspot.com",
+            messagingSenderId: "318806251450",
+            appId: "1:318806251450:web:d13b5f1d6a504e89b5ef83",
+            measurementId: "G-S6T8YBW18F"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        function validateSignIn(event) {
+    event.preventDefault();
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+
+    auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            let user = userCredential.user;
+            return fetch('/firebase_login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: user.email })
+            });
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Login successful! Redirecting...");
+                window.location.href = 'dash.html'; // Redirects to Flask dashboard
+            } else {
+                alert("Login failed: " + data.error);
+            }
+        })
+        .catch((error) => {
+            alert(error.message);
+        });
+
+}
+  </script>
+</body>
+</html>

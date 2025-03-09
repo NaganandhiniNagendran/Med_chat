@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        /* 🔹 General Styles */
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #e3f2fd;
+        }
+
+        /* 🔹 Chatbot Container */
+        .chatbot-container {
+            width: 420px;
+            background-color: rgba(255, 255, 255, 0.9); /* Fixed */
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Hover Effect for Chatbot Container */
+        .chatbot-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #007bff, #00c6ff);
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 🔹 Chat Log Styling */
+        .chat-log {
+            height: 320px;
+            overflow-y: auto;
+            padding: 15px;
+            border-bottom: 2px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            scroll-behavior: smooth;
+        }
+
+        /* 🔹 Message Styling */
+        .message {
+            padding: 12px;
+            margin: 8px;
+            border-radius: 20px;
+            max-width: 70%;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Bot Message - Left Side */
+        .bot-message {
+            background-color: #f0f0f0;
+            align-self: flex-start;
+            text-align: left;
+        }
+
+        /* User Message - Right Side */
+        .user-message {
+            background-color: #d1e7ff;
+            align-self: flex-end;
+            text-align: right;
+        }
+
+        /* 🔹 Chat Input Box */
+        .chat-input {
+            display: flex;
+            padding: 12px;
+            align-items: center;
+            background: #fff;
+        }
+
+        /* 🔹 Input Field with Focus Glow */
+        .chat-input input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            transition: all 0.3s ease-in-out;
+            outline: none;
+            font-size: 16px;
+        }
+
+        /* Glowing Effect on Focus */
+        .chat-input input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+        }
+
+        /* 🔹 Send Button */
+        .chat-input button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            font-size: 18px;
+            margin-left: 8px;
+        }
+
+        /* Button Hover & Active Effects */
+        .chat-input button:hover {
+            background-color: #0056b3;
+        }
+
+        .chat-input button:active {
+            transform: scale(0.9);
+        }
+
+        /* Change Button to Arrow on Typing */
+        .chat-input button.arrow {
+            background-color: #28a745;
+        }
+
+        /* 🔹 Disclaimer */
+        .disclaimer {
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            margin-top: 15px;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbot-container">
+        <div class="chat-header">
+            <h2>Chatbot</h2>
+        </div>
+        <div class="chat-log" id="chat-log">
+            <div class="message bot-message">Hello, how can I help you?</div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your message..." onkeyup="changeButton(event)">
+            <button id="send-button" onclick="sendMessage()">&#10148;</button>
+        </div>
+    </div>
+
+   
+    
+    <script>
+        // ✅ Change Send Button Shape When Typing
+        function changeButton(event) {
+            let inputField = document.getElementById("user-input");
+            let sendButton = document.getElementById("send-button");
+
+            if (inputField.value.trim() !== "") {
+                sendButton.classList.add("arrow"); // Change button color
+            } else {
+                sendButton.classList.remove("arrow");
+            }
+
+            // ✅ Send Message on Enter Key Press
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const userInput = document.getElementById('user-input');
+            const chatLog = document.getElementById('chat-log');
+            const message = userInput.value.trim();
+
+            if (message !== '') {
+                // ✅ User message (Right Side)
+                const userMessageDiv = document.createElement('div');
+                userMessageDiv.classList.add('message', 'user-message');
+                userMessageDiv.textContent = message;
+                chatLog.appendChild(userMessageDiv);
+
+                // ✅ Send message to backend
+                fetch('/get_response', {  
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'user_input=' + encodeURIComponent(message)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // ✅ Bot response (Left Side)
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.classList.add('message', 'bot-message');
+                    botMessageDiv.textContent = data.response;
+                    chatLog.appendChild(botMessageDiv);
+                    chatLog.scrollTop = chatLog.scrollHeight;
+                })
+                .catch(error => console.error('Error:', error));
+
+                userInput.value = ''; // Clear input
+                document.getElementById("send-button").classList.remove("arrow"); // Reset button style
+            }
+        }
+    </script>
+</body>
+</html>
